@@ -1,5 +1,7 @@
 package com.healthdom.synerise_flutter;
 
+import android.app.Activity;
+
 import androidx.annotation.NonNull;
 import androidx.multidex.MultiDexApplication;
 
@@ -14,18 +16,21 @@ import com.synerise.sdk.injector.callback.InjectorSource;
 import com.synerise.sdk.injector.callback.OnInjectorListener;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityAware;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 /** SyneriseFlutterPlugin */
-public class SyneriseFlutterPlugin extends MultiDexApplication implements FlutterPlugin, MethodCallHandler, OnRegisterForPushListener, OnLocationUpdateListener, SyneriseListener {
+public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler, OnRegisterForPushListener, OnLocationUpdateListener, SyneriseListener {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
+  private Activity activity;
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -61,8 +66,7 @@ public class SyneriseFlutterPlugin extends MultiDexApplication implements Flutte
     Synerise.settings.injector.automatic = true;
     Synerise.settings.sdk.shouldDestroySessionOnApiKeyChange = true;
     Synerise.settings.notifications.setEncryption(true);
-
-    Synerise.Builder.with(this, syneriseClientApiKey, appId)
+    Synerise.Builder.with(activity.getApplication(), syneriseClientApiKey, appId)
             .mesaggingServiceType(MessagingServiceType.GMS)
             .syneriseDebugMode(true)
             .crashHandlingEnabled(true)
@@ -85,6 +89,26 @@ public class SyneriseFlutterPlugin extends MultiDexApplication implements Flutte
 
   @Override
   public void onInitializationCompleted() {
+
+  }
+
+  @Override
+  public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+    activity = binding.getActivity();
+  }
+
+  @Override
+  public void onDetachedFromActivityForConfigChanges() {
+
+  }
+
+  @Override
+  public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
+
+  }
+
+  @Override
+  public void onDetachedFromActivity() {
 
   }
 }
