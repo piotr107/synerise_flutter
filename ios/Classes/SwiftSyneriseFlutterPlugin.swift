@@ -18,6 +18,13 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
           initSynerise(apiKey: args["apiKey"]!, appId: args["appId"]!)
           result("Synerise client UUID: " + Client.getUUID())
       }
+      if (call.method == "authorizeByOauth") {
+          guard let token = call.arguments as? String else {
+              result("Missing OAuth token")
+              return
+          }
+          authorizeByOauth(token: token, result: result)
+      }
       result("Method not implemented")
   }
     
@@ -26,6 +33,14 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
         Synerise.setDebugModeEnabled(true)
         Synerise.setCrashHandlingEnabled(true)
         Synerise.setDelegate(self)
+    }
+    
+    private func authorizeByOauth(token: String, result: @escaping FlutterResult) {
+        Client.authenticate(token: token, clientIdentityProvider: ClientIdentityProvider.oAuth, authID: nil, context: nil, success: { (value: Bool) in
+            result("OAuth result: " + String(value))
+        }, failure: { (error: SNRApiError) in
+            result(error.localizedDescription)
+        })
     }
     
 }

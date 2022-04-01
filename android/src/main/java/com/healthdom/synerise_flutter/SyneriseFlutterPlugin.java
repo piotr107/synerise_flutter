@@ -5,10 +5,14 @@ import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.multidex.MultiDexApplication;
 
+import com.synerise.sdk.client.Client;
+import com.synerise.sdk.client.model.ClientIdentityProvider;
 import com.synerise.sdk.core.Synerise;
+import com.synerise.sdk.core.listeners.ActionListener;
 import com.synerise.sdk.core.listeners.OnLocationUpdateListener;
 import com.synerise.sdk.core.listeners.OnRegisterForPushListener;
 import com.synerise.sdk.core.listeners.SyneriseListener;
+import com.synerise.sdk.core.net.IApiCall;
 import com.synerise.sdk.core.types.enums.HostApplicationType;
 import com.synerise.sdk.core.types.enums.MessagingServiceType;
 import com.synerise.sdk.core.types.enums.TrackMode;
@@ -37,14 +41,19 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
 
   @Override
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
-    if (call.method.equals("initSynerise")) {
-      final String apiKey = call.argument("apiKey");
-      final String appId = call.argument("appId");
-      initSynerise(apiKey, appId);
-      result.success("Synerise " + Synerise.getAppId());
-    }
-    else {
-      result.notImplemented();
+    switch (call.method) {
+      case "initSynerise":
+        final String apiKey = call.argument("apiKey");
+        final String appId = call.argument("appId");
+        initSynerise(apiKey, appId);
+        result.success("Synerise " + Synerise.getAppId());
+        break;
+      case "authorizeByOauth":
+        final String token = call.arguments.toString();
+        authorizeByOauth(token, result);
+        break;
+      default:
+        result.notImplemented();
     }
   }
 
@@ -70,6 +79,11 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
             .initializationListener(this)
             .hostApplicationType(HostApplicationType.NATIVE_ANDROID)
             .build();
+  }
+
+  private void authorizeByOauth(String token, Result result) {
+    Client.authenticate(token, ClientIdentityProvider.OAUTH, null, null, null)
+            .execute(new OauthSuccessHandler(result), new OauthErrorHandler(result));
   }
 
   @Override

@@ -11,4 +11,8 @@ class SyneriseFlutter {
         .invokeMethod('initSynerise', {'apiKey': apiKey, 'appId': appId});
     return version;
   }
+
+  static Future<void> authorizeByOauth(String token) async {
+    await _channel.invokeMethod('authorizeByOauth', token);
+  }
 }
