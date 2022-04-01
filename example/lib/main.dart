@@ -4,6 +4,8 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:synerise_flutter/synerise_flutter.dart';
 
+import 'keys.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -31,7 +33,10 @@ class _MyAppState extends State<MyApp> {
     // We also handle the message potentially returning null.
     try {
       platformVersion =
-          await SyneriseFlutter.initSynerise ?? 'Unknown platform version';
+          await SyneriseFlutter.initSynerise(
+            apiKey: apiKey,
+            appId: appId
+          ) ?? 'Error';
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }

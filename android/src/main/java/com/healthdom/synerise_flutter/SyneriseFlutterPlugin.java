@@ -25,10 +25,7 @@ import io.flutter.plugin.common.MethodChannel.Result;
 
 /** SyneriseFlutterPlugin */
 public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler, OnRegisterForPushListener, OnLocationUpdateListener, SyneriseListener {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
+
   private MethodChannel channel;
   private Activity activity;
 
@@ -40,10 +37,10 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
 
   @Override
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
-    if (call.method.equals("getPlatformVersion")) {
-      result.success("Android " + android.os.Build.VERSION.RELEASE);
-    } else if (call.method.equals("initSynerise")) {
-      initSynerise();
+    if (call.method.equals("initSynerise")) {
+      final String apiKey = call.argument("apiKey");
+      final String appId = call.argument("appId");
+      initSynerise(apiKey, appId);
       result.success("Synerise " + Synerise.getAppId());
     }
     else {
@@ -56,9 +53,7 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
     channel.setMethodCallHandler(null);
   }
 
-  private void initSynerise() {
-    String syneriseClientApiKey = "57f246e5-6d02-4a76-a95e-74cc9077d741";
-    String appId = "ZdrowAppka (partner: Persooa)";
+  private void initSynerise(String apiKey, String appId) {
     Synerise.settings.tracker.autoTracking.trackMode = TrackMode.FINE;
     Synerise.settings.tracker.setMinimumBatchSize(11);
     Synerise.settings.tracker.setMaximumBatchSize(99);
@@ -66,7 +61,7 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
     Synerise.settings.injector.automatic = true;
     Synerise.settings.sdk.shouldDestroySessionOnApiKeyChange = true;
     Synerise.settings.notifications.setEncryption(true);
-    Synerise.Builder.with(activity.getApplication(), syneriseClientApiKey, appId)
+    Synerise.Builder.with(activity.getApplication(), apiKey, appId)
             .mesaggingServiceType(MessagingServiceType.GMS)
             .syneriseDebugMode(true)
             .crashHandlingEnabled(true)
