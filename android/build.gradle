@@ -1,0 +1,43 @@
+group 'com.healthdom.synerise_flutter'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.4.2'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://pkgs.dev.azure.com/Synerise/AndroidSDK/_packaging/prod/maven/v1' }
+    }
+}
+
+apply plugin: 'com.android.library'
+
+dependencies {
+// Synerise Android SDK
+    implementation 'com.synerise.sdk:synerise-mobile-sdk:4.0.0'
+
+    implementation("androidx.multidex:multidex:2.0.1")
+}
+
+android {
+    compileSdkVersion 31
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        minSdkVersion 21
+    }
+}
