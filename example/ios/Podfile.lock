@@ -8,7 +8,6 @@ PODS:
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - synerise_flutter (from `.symlinks/plugins/synerise_flutter/ios`)
-  - SyneriseSDK
 
 SPEC REPOS:
   trunk:
@@ -25,6 +24,6 @@ SPEC CHECKSUMS:
   synerise_flutter: c26492b4268ab49a9d718a93bb1030d60d9651a3
   SyneriseSDK: 72055a7838a67cb1136d0a4fd53aaa586b56d6d5
 
-PODFILE CHECKSUM: 2777247521dde1c4e1752da46228a222258fd422
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 
 COCOAPODS: 1.11.2
