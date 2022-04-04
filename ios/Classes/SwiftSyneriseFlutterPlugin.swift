@@ -10,22 +10,28 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-      if (call.method == "initSynerise") {
+      switch (call.method) {
+        case "initSynerise":
           guard let args = call.arguments as? [String: String] else {
               result("iOS could not recognize flutter arguments for method initSynerise()")
               return
           }
-          initSynerise(apiKey: args["apiKey"]!, appId: args["appId"]!)
+          initSynerise(apžiKey: args["apiKey"]!, appId: args["appId"]!)
           result("Synerise client UUID: " + Client.getUUID())
-      }
-      if (call.method == "authorizeByOauth") {
+          break
+
+        case "authorizeByOauth":
           guard let token = call.arguments as? String else {
               result("Missing OAuth token")
               return
           }
           authorizeByOauth(token: token, result: result)
+          break
+
+        default:
+          result("Method not implemented: " + call.method)
+          break
       }
-      result("Method not implemented")
   }
     
     private func initSynerise(apiKey: String, appId: String) {
