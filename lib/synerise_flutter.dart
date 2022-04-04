@@ -12,7 +12,9 @@ class SyneriseFlutter {
     return version;
   }
 
-  static Future<void> authorizeByOauth(String token) async {
-    await _channel.invokeMethod('authorizeByOauth', token);
+  static Future<String?> authorizeByOauth(String token) async {
+    final String? response =
+        await _channel.invokeMethod('authorizeByOauth', token);
+    return response;
   }
 }
