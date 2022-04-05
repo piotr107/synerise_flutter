@@ -16,6 +16,8 @@ import com.synerise.sdk.core.net.IApiCall;
 import com.synerise.sdk.core.types.enums.HostApplicationType;
 import com.synerise.sdk.core.types.enums.MessagingServiceType;
 import com.synerise.sdk.core.types.enums.TrackMode;
+import com.synerise.sdk.event.Tracker;
+import com.synerise.sdk.event.model.interaction.VisitedScreenEvent;
 import com.synerise.sdk.injector.callback.InjectorSource;
 import com.synerise.sdk.injector.callback.OnInjectorListener;
 
@@ -52,6 +54,10 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
         final String token = call.arguments.toString();
         authorizeByOauth(token, result);
         break;
+      case "trackScreenView":
+        final String screenName = call.arguments.toString();
+        trackScreenView(screenName);
+        break;
       default:
         result.notImplemented();
     }
@@ -63,7 +69,7 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
   }
 
   private void initSynerise(String apiKey, String appId) {
-    Synerise.settings.tracker.autoTracking.trackMode = TrackMode.FINE;
+    Synerise.settings.tracker.autoTracking.enabled = false;
     Synerise.settings.tracker.setMinimumBatchSize(11);
     Synerise.settings.tracker.setMaximumBatchSize(99);
     Synerise.settings.tracker.setAutoFlushTimeout(4999);
@@ -84,6 +90,11 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
   private void authorizeByOauth(String token, Result result) {
     Client.authenticate(token, ClientIdentityProvider.OAUTH, null, null, null)
             .execute(new OauthSuccessHandler(result), new OauthErrorHandler(result));
+  }
+
+  private void trackScreenView(String name) {
+    VisitedScreenEvent event = new VisitedScreenEvent(name);
+    Tracker.send(event);
   }
 
   @Override

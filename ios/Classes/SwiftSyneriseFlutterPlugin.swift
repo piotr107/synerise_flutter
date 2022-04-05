@@ -27,6 +27,13 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
           }
           authorizeByOauth(token: token, result: result)
           break
+      case "trackScreenView":
+        guard let screenName = call.arguments as? String else {
+            result("Missing screen name")
+            return
+        }
+          trackScreenView(screenName: screenName)
+        break
 
         default:
           result("Method not implemented: " + call.method)
@@ -34,6 +41,7 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
   }
     
     private func initSynerise(apiKey: String, appId: String) {
+        Synerise.settings.tracker.autoTracking.enabled = false
         Synerise.initialize(clientApiKey: apiKey)
         Synerise.setDebugModeEnabled(true)
         Synerise.setCrashHandlingEnabled(true)
@@ -46,6 +54,11 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
         }, failure: { (error: SNRApiError) in
             result(error.localizedDescription)
         })
+    }
+    
+    private func trackScreenView(screenName: String) {
+        let event: VisitedScreenEvent = VisitedScreenEvent.init(label: screenName)
+        Tracker.send(event);
     }
     
 }

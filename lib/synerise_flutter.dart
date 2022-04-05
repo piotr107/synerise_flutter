@@ -17,4 +17,8 @@ class SyneriseFlutter {
         await _channel.invokeMethod('authorizeByOauth', token);
     return response;
   }
+
+  static void trackScreenView(String name) {
+    _channel.invokeMethod('trackScreenView', name);
+  }
 }
