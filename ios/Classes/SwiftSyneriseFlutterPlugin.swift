@@ -41,11 +41,11 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
   }
     
     private func initSynerise(apiKey: String, appId: String) {
-        Synerise.settings.tracker.autoTracking.enabled = false
         Synerise.initialize(clientApiKey: apiKey)
         Synerise.setDebugModeEnabled(true)
         Synerise.setCrashHandlingEnabled(true)
         Synerise.setDelegate(self)
+        Synerise.settings.tracker.autoTracking.enabled = false
     }
     
     private func authorizeByOauth(token: String, result: @escaping FlutterResult) {
