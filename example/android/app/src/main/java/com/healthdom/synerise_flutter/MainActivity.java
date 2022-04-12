@@ -1,4 +1,4 @@
-package com.healthdom.synerise_flutter_example;
+package com.healthdom.synerise_flutter;
 
 import io.flutter.embedding.android.FlutterActivity;
 

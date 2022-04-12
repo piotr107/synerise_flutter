@@ -1,9 +1,17 @@
 package com.healthdom.synerise_flutter;
 
 import android.app.Activity;
+import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.multidex.MultiDexApplication;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.messaging.FirebaseMessaging;
+
+import android.text.TextUtils;
+import android.util.Log;
 
 import com.synerise.sdk.client.Client;
 import com.synerise.sdk.client.model.ClientIdentityProvider;
@@ -20,6 +28,7 @@ import com.synerise.sdk.event.Tracker;
 import com.synerise.sdk.event.model.interaction.VisitedScreenEvent;
 import com.synerise.sdk.injector.callback.InjectorSource;
 import com.synerise.sdk.injector.callback.OnInjectorListener;
+import com.healthdom.synerise_flutter.util.FirebaseIdChangeBroadcastReceiver;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -34,6 +43,7 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
 
   private MethodChannel channel;
   private Activity activity;
+  private static final String TAG = SyneriseFlutterPlugin.class.getSimpleName();
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -104,7 +114,21 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
 
   @Override
   public void onRegisterForPushRequired() {
+    // your logic here
+    FirebaseApp.initializeApp(activity.getApplicationContext());
+    FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> {
+      if (!TextUtils.isEmpty(token)) {
+        Log.d(TAG, "Retrieve token Successful : " + token);
+        IApiCall call = Client.registerForPush(token, true);
+        call.execute(() -> Log.d(TAG, "Register for Push succeed: " + token),
+                apiError -> Log.w(TAG, "Register for push failed: " + token));
 
+        Intent intent = FirebaseIdChangeBroadcastReceiver.createFirebaseIdChangedIntent();
+        LocalBroadcastManager.getInstance(activity.getApplicationContext()).sendBroadcast(intent);
+      } else{
+        Log.w(TAG, "token should not be null...");
+      }
+    });
   }
 
   @Override

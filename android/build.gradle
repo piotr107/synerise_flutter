@@ -27,6 +27,10 @@ dependencies {
     implementation 'com.synerise.sdk:synerise-mobile-sdk:4.0.0'
 
     implementation("androidx.multidex:multidex:2.0.1")
+
+    // Firebase
+    implementation 'com.google.firebase:firebase-messaging:23.0.0'
+    implementation 'com.google.firebase:firebase-core:20.0.2'
 }
 
 android {
@@ -41,3 +45,5 @@ android {
         minSdkVersion 21
     }
 }
+
+apply plugin: 'com.google.gms.google-services'
