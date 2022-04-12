@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
-import androidx.multidex.MultiDexApplication;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.firebase.FirebaseApp;
@@ -16,18 +15,14 @@ import android.util.Log;
 import com.synerise.sdk.client.Client;
 import com.synerise.sdk.client.model.ClientIdentityProvider;
 import com.synerise.sdk.core.Synerise;
-import com.synerise.sdk.core.listeners.ActionListener;
 import com.synerise.sdk.core.listeners.OnLocationUpdateListener;
 import com.synerise.sdk.core.listeners.OnRegisterForPushListener;
 import com.synerise.sdk.core.listeners.SyneriseListener;
 import com.synerise.sdk.core.net.IApiCall;
 import com.synerise.sdk.core.types.enums.HostApplicationType;
 import com.synerise.sdk.core.types.enums.MessagingServiceType;
-import com.synerise.sdk.core.types.enums.TrackMode;
 import com.synerise.sdk.event.Tracker;
 import com.synerise.sdk.event.model.interaction.VisitedScreenEvent;
-import com.synerise.sdk.injector.callback.InjectorSource;
-import com.synerise.sdk.injector.callback.OnInjectorListener;
 import com.healthdom.synerise_flutter.util.FirebaseIdChangeBroadcastReceiver;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -39,7 +34,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 /** SyneriseFlutterPlugin */
-public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler, OnRegisterForPushListener, OnLocationUpdateListener, SyneriseListener {
+public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler, OnLocationUpdateListener, SyneriseListener {
 
   private MethodChannel channel;
   private Activity activity;
@@ -68,6 +63,10 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
         final String screenName = call.arguments.toString();
         trackScreenView(screenName);
         break;
+      case "registerFcmToken":
+        final String fcmToken = call.arguments.toString();
+        registerFcmToken(fcmToken, result);
+        break;
       default:
         result.notImplemented();
     }
@@ -90,7 +89,6 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
             .mesaggingServiceType(MessagingServiceType.GMS)
             .syneriseDebugMode(true)
             .crashHandlingEnabled(true)
-            .pushRegistrationRequired(this)
             .locationUpdateRequired(this)
             .initializationListener(this)
             .hostApplicationType(HostApplicationType.NATIVE_ANDROID)
@@ -107,28 +105,17 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
     Tracker.send(event);
   }
 
-  @Override
-  public void onLocationUpdateRequired() {
+  private void registerFcmToken(String token, Result result) {
+    Log.d(TAG, "Refreshed token: " + token);
 
+    IApiCall call = Client.registerForPush(token, true);
+    call.execute(() -> result.success("Register for Push succeed: " + token),
+            apiError -> result.success(Log.w(TAG, "Register for push failed: " + token)));
   }
 
   @Override
-  public void onRegisterForPushRequired() {
-    // your logic here
-    FirebaseApp.initializeApp(activity.getApplicationContext());
-    FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> {
-      if (!TextUtils.isEmpty(token)) {
-        Log.d(TAG, "Retrieve token Successful : " + token);
-        IApiCall call = Client.registerForPush(token, true);
-        call.execute(() -> Log.d(TAG, "Register for Push succeed: " + token),
-                apiError -> Log.w(TAG, "Register for push failed: " + token));
+  public void onLocationUpdateRequired() {
 
-        Intent intent = FirebaseIdChangeBroadcastReceiver.createFirebaseIdChangedIntent();
-        LocalBroadcastManager.getInstance(activity.getApplicationContext()).sendBroadcast(intent);
-      } else{
-        Log.w(TAG, "token should not be null...");
-      }
-    });
   }
 
   @Override

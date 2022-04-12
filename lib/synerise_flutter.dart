@@ -18,6 +18,12 @@ class SyneriseFlutter {
     return response;
   }
 
+  static Future<String?> registerFcmToken(String token) async {
+    final String? response =
+        await _channel.invokeMethod('registerFcmToken', token);
+    return response;
+  }
+
   static void trackScreenView(String name) {
     _channel.invokeMethod('trackScreenView', name);
   }
