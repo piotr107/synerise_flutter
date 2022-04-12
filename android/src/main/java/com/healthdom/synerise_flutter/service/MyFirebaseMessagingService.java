@@ -35,7 +35,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-
+        Log.d(TAG, "onMessageReceived");
         Map<String, String> data = remoteMessage.getData();
         if (Injector.isSilentCommand(data)) {
             try {
