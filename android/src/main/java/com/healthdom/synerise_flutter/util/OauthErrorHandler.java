@@ -1,4 +1,4 @@
-package com.healthdom.synerise_flutter;
+package com.healthdom.synerise_flutter.util;
 
 import com.synerise.sdk.core.listeners.DataActionListener;
 import com.synerise.sdk.error.ApiError;

@@ -1,29 +1,23 @@
 package com.healthdom.synerise_flutter;
 
 import android.app.Activity;
-import android.content.Intent;
 
 import androidx.annotation.NonNull;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.messaging.FirebaseMessaging;
-
-import android.text.TextUtils;
 import android.util.Log;
 
+import com.healthdom.synerise_flutter.util.OauthErrorHandler;
+import com.healthdom.synerise_flutter.util.OauthSuccessHandler;
 import com.synerise.sdk.client.Client;
 import com.synerise.sdk.client.model.ClientIdentityProvider;
 import com.synerise.sdk.core.Synerise;
 import com.synerise.sdk.core.listeners.OnLocationUpdateListener;
-import com.synerise.sdk.core.listeners.OnRegisterForPushListener;
 import com.synerise.sdk.core.listeners.SyneriseListener;
 import com.synerise.sdk.core.net.IApiCall;
 import com.synerise.sdk.core.types.enums.HostApplicationType;
 import com.synerise.sdk.core.types.enums.MessagingServiceType;
 import com.synerise.sdk.event.Tracker;
 import com.synerise.sdk.event.model.interaction.VisitedScreenEvent;
-import com.healthdom.synerise_flutter.util.FirebaseIdChangeBroadcastReceiver;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
