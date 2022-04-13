@@ -27,13 +27,22 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
           }
           authorizeByOauth(token: token, result: result)
           break
-      case "trackScreenView":
-        guard let screenName = call.arguments as? String else {
-            result("Missing screen name")
-            return
-        }
+          
+        case "trackScreenView":
+          guard let screenName = call.arguments as? String else {
+              result("Missing screen name")
+              return
+          }
           trackScreenView(screenName: screenName)
-        break
+          break
+          
+        case "registerFcmToken":
+          guard let fcmToken = call.arguments as? String else {
+              result("Missing Fcm token")
+              return
+          }
+          registerFcmToken(fcmToken: fcmToken, result: result)
+          break
 
         default:
           result("Method not implemented: " + call.method)
@@ -59,6 +68,14 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
     private func trackScreenView(screenName: String) {
         let event: VisitedScreenEvent = VisitedScreenEvent.init(label: screenName)
         Tracker.send(event);
+    }
+    
+    private func registerFcmToken(fcmToken: String, result: @escaping FlutterResult) {
+        Client.registerForPush(registrationToken: fcmToken, mobilePushAgreement: true, success: { (success) in
+            result("Register for Push succeed: " + String(fcmToken))
+        }) { (error) in
+            result("Register for push failed: " + String(fcmToken))
+        }
     }
     
 }
