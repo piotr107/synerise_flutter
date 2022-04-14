@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.google.firebase.messaging.RemoteMessage;
+import com.healthdom.synerise_flutter.util.PushThread;
 import com.synerise.sdk.injector.Injector;
 
 import java.util.Map;
@@ -26,7 +27,8 @@ public class SyneriseMessagingReceiver extends BroadcastReceiver {
         Map<String,String> messageData = remoteMessage.getData();
         boolean isSynerisePush = Injector.isSynerisePush(messageData);
         if (isSynerisePush) {
-            Injector.handlePushPayload(messageData);
+            PushThread thread = new PushThread(messageData);
+            thread.start();
         }
     }
 }
