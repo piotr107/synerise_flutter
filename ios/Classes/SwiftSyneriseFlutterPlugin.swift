@@ -50,11 +50,27 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
   }
     
     private func initSynerise(apiKey: String, appId: String) {
+        Synerise.settings.sdk.appGroupIdentifier = "group.zdrowappka.dev"
+        Synerise.settings.sdk.keychainGroupIdentifier = "com.zdrowappka.prod"
         Synerise.initialize(clientApiKey: apiKey)
         Synerise.setDebugModeEnabled(true)
         Synerise.setCrashHandlingEnabled(true)
         Synerise.setDelegate(self)
         Synerise.settings.tracker.autoTracking.enabled = false
+        initNotificationSettings()
+    }
+
+    private func initNotificationSettings() {
+
+
+        let singleMediaCategory = UNNotificationCategory(identifier: SNRSingleMediaContentExtensionViewControllerCategoryIdentifier, actions: [], intentIdentifiers: [], options: [])
+
+        let carouselPrevious = UNNotificationAction(identifier: SNRCarouselContentExtensionViewControllerPreviousItemIdentifier, title: "Previous", options: [])
+        let carouselAction = UNNotificationAction(identifier: SNRCarouselContentExtensionViewControllerChooseItemIdentifier, title: "Go!", options: UNNotificationActionOptions.foreground)
+        let carouselNext = UNNotificationAction(identifier: SNRCarouselContentExtensionViewControllerNextItemIdentifier, title: "Next", options: [])
+        let carouselCategory = UNNotificationCategory(identifier: SNRCarouselContentExtensionViewControllerCategoryIdentifier, actions: [carouselPrevious, carouselAction, carouselNext], intentIdentifiers: [], options: [])
+
+        UNUserNotificationCenter.current().setNotificationCategories([singleMediaCategory, carouselCategory])
     }
     
     private func authorizeByOauth(token: String, result: @escaping FlutterResult) {
