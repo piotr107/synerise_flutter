@@ -4,8 +4,10 @@ import android.app.Activity;
 
 import androidx.annotation.NonNull;
 
+import android.content.Intent;
 import android.util.Log;
 
+import com.google.firebase.messaging.RemoteMessage;
 import com.healthdom.synerise_flutter.util.OauthErrorHandler;
 import com.healthdom.synerise_flutter.util.OauthSuccessHandler;
 import com.synerise.sdk.client.Client;
@@ -18,6 +20,11 @@ import com.synerise.sdk.core.types.enums.HostApplicationType;
 import com.synerise.sdk.core.types.enums.MessagingServiceType;
 import com.synerise.sdk.event.Tracker;
 import com.synerise.sdk.event.model.interaction.VisitedScreenEvent;
+import com.synerise.sdk.injector.Injector;
+import com.synerise.sdk.injector.callback.InjectorSource;
+import com.synerise.sdk.injector.callback.OnInjectorListener;
+
+import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -26,9 +33,10 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.PluginRegistry;
 
 /** SyneriseFlutterPlugin */
-public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler, OnLocationUpdateListener, SyneriseListener {
+public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler, OnLocationUpdateListener, SyneriseListener, OnInjectorListener, PluginRegistry.NewIntentListener {
 
   private MethodChannel channel;
   private Activity activity;
@@ -36,6 +44,7 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+    Log.d(TAG, "onAttachedToEngine");
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "synerise_flutter");
     channel.setMethodCallHandler(this);
   }
@@ -68,6 +77,7 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
 
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+    Log.d(TAG, "onDetachedFromEngine");
     channel.setMethodCallHandler(null);
   }
 
@@ -119,21 +129,52 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
 
   @Override
   public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+    binding.addOnNewIntentListener(this);
     activity = binding.getActivity();
+    Log.d(TAG, "onAttachedToActivity");
   }
 
   @Override
   public void onDetachedFromActivityForConfigChanges() {
+    Log.d(TAG, "onDetachedFromActivityForConfigChanges");
 
   }
 
   @Override
   public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
+    Log.d(TAG, "onReattachedToActivityForConfigChanges");
 
   }
 
   @Override
   public void onDetachedFromActivity() {
+    Log.d(TAG, "onDetachedFromActivity");
 
+  }
+
+  @Override
+  public boolean onOpenUrl(InjectorSource source, String url) {
+    Log.d(TAG, "onOpenUrl");
+    return false;
+  }
+
+  @Override
+  public boolean onDeepLink(InjectorSource source, String deepLink) {
+    Log.d(TAG, "onDeepLink");
+    return false;
+  }
+
+  @Override
+  public boolean onNewIntent(Intent intent) {
+    if (intent == null || intent.getExtras() == null) {
+      return false;
+    }
+    String data = intent.getDataString();
+    Log.d(TAG, data);
+    if (data != null) {
+      channel.invokeMethod("onUrlOpen", data);
+    }
+    activity.setIntent(intent);
+    return true;
   }
 }

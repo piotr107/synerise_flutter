@@ -33,10 +33,8 @@ class _MyAppState extends State<MyApp> {
     // We also handle the message potentially returning null.
     try {
       platformVersion =
-          await SyneriseFlutter.initSynerise(
-            apiKey: apiKey,
-            appId: appId
-          ) ?? 'Error';
+          await SyneriseFlutter().initSynerise(apiKey: apiKey, appId: appId) ??
+              'Error';
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }

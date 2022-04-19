@@ -3,28 +3,59 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 class SyneriseFlutter {
-  static const MethodChannel _channel = MethodChannel('synerise_flutter');
-
-  static Future<String?> initSynerise(
-      {required String apiKey, required String appId}) async {
-    final String? version = await _channel
-        .invokeMethod('initSynerise', {'apiKey': apiKey, 'appId': appId});
-    return version;
+  factory SyneriseFlutter() {
+    if (_instance == null) {
+      const MethodChannel methodChannel = MethodChannel('synerise_flutter');
+      _instance = SyneriseFlutter.private(methodChannel);
+    }
+    return _instance!;
   }
 
-  static Future<String?> authorizeByOauth(String token) async {
+  SyneriseFlutter.private(this._channel) {
+    _channel.setMethodCallHandler(_methodCallHandler);
+  }
+
+  static SyneriseFlutter? _instance;
+  final MethodChannel _channel;
+
+  final _onUrlOpen = StreamController<Uri>.broadcast();
+
+  Stream<Uri> get onUrlOpen => _onUrlOpen.stream;
+
+  Future<dynamic> _methodCallHandler(MethodCall call) async {
+    switch (call.method) {
+      case 'onUrlOpen':
+        final url = call.arguments as String;
+        final uri = Uri.tryParse(url);
+        if (uri != null) {
+          _onUrlOpen.add(uri);
+        }
+        break;
+      default:
+        throw 'Method ${call.method} not implemented on channel synerise_flutter';
+    }
+  }
+
+  Future<String?> initSynerise(
+      {required String apiKey, required String appId}) async {
+    final String? result = await _channel
+        .invokeMethod('initSynerise', {'apiKey': apiKey, 'appId': appId});
+    return result;
+  }
+
+  Future<String?> authorizeByOauth(String token) async {
     final String? response =
         await _channel.invokeMethod('authorizeByOauth', token);
     return response;
   }
 
-  static Future<String?> registerFcmToken(String token) async {
+  Future<String?> registerFcmToken(String token) async {
     final String? response =
         await _channel.invokeMethod('registerFcmToken', token);
     return response;
   }
 
-  static void trackScreenView(String name) {
+  void trackScreenView(String name) {
     _channel.invokeMethod('trackScreenView', name);
   }
 }
