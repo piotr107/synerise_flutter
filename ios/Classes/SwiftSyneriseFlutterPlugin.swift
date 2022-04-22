@@ -16,6 +16,10 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
               result("iOS could not recognize flutter arguments for method initSynerise()")
               return
           }
+          if !Client.getUUID().isEmpty {
+              result("Synerise client UUID: " + Client.getUUID())
+              break
+          }
           initSynerise(apiKey: args["apiKey"]!, appId: args["appId"]!)
           result("Synerise client UUID: " + Client.getUUID())
           break

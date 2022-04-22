@@ -53,6 +53,10 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
     switch (call.method) {
       case "initSynerise":
+        if (Synerise.getAppId() != null) {
+          result.success("Synerise " + Synerise.getAppId());
+          break;
+        }
         final String apiKey = call.argument("apiKey");
         final String appId = call.argument("appId");
         initSynerise(apiKey, appId);
