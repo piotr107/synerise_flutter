@@ -170,8 +170,8 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
       return false;
     }
     String data = intent.getDataString();
-    Log.d(TAG, data);
     if (data != null) {
+      Log.d(TAG, data);
       channel.invokeMethod("onUrlOpen", data);
     }
     activity.setIntent(intent);
