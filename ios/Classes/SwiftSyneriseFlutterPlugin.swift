@@ -47,6 +47,14 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
           }
           registerFcmToken(fcmToken: fcmToken, result: result)
           break
+          
+        case "trackEvent":
+          guard let args = call.arguments as? [String: AnyObject] else {
+              result("iOS could not recognize flutter arguments for method trackEvent")
+              return
+          }
+          trackEvent(action: args["action"] as! String, label: args["label"] as! String, params: args["params"] as! [String : String])
+          break
 
         default:
           result("Method not implemented: " + call.method)
@@ -96,6 +104,18 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
         }) { (error) in
             result("Register for push failed: " + String(fcmToken))
         }
+    }
+    
+    private func trackEvent(action: String, label: String, params: [String:String]) {
+        let parameters: TrackerParams = TrackerParams.make {
+            builder in
+            for (key, value) in params {
+                builder.setString(key, forKey: value)
+            }
+        }
+        let event: CustomEvent = CustomEvent(label: label, action: action, params: parameters)
+
+        Tracker.send(event)
     }
     
 }
