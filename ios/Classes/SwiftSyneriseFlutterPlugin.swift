@@ -53,7 +53,12 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
               result("iOS could not recognize flutter arguments for method trackEvent")
               return
           }
-          trackEvent(action: args["action"] as! String, label: args["label"] as! String, params: args["params"] as! [String : String])
+          if (args["params"] != nil) {
+              trackEventWithParams(action: args["action"] as! String, label: args["label"] as! String, params: args["params"] as! [String : String])
+          } else {
+              trackEvent(action: args["action"] as! String, label: args["label"] as! String)
+          }
+          
           break
 
         default:
@@ -106,7 +111,7 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
         }
     }
     
-    private func trackEvent(action: String, label: String, params: [String:String]) {
+    private func trackEventWithParams(action: String, label: String, params: [String:String]) {
         let parameters: TrackerParams = TrackerParams.make {
             builder in
             for (key, value) in params {
@@ -114,6 +119,12 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
             }
         }
         let event: CustomEvent = CustomEvent(label: label, action: action, params: parameters)
+
+        Tracker.send(event)
+    }
+    
+    private func trackEvent(action: String, label: String) {
+        let event: CustomEvent = CustomEvent(label: label, action: action)
 
         Tracker.send(event)
     }
