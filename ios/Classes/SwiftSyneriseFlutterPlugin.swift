@@ -99,11 +99,13 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
     }
     
     private func authorizeByOauth(token: String, result: @escaping FlutterResult) {
-        Client.authenticate(token: token, clientIdentityProvider: ClientIdentityProvider.oAuth, authID: nil, context: nil, success: { (value: Bool) in
-            result("OAuth result: " + String(value))
-        }, failure: { (error: SNRApiError) in
-            result(error.localizedDescription)
-        })
+        if (!Client.isSignedIn()) {
+            Client.authenticate(token: token, clientIdentityProvider: ClientIdentityProvider.oAuth, authID: nil, context: nil, success: { (value: Bool) in
+                result("OAuth result: " + String(value))
+            }, failure: { (error: SNRApiError) in
+                result(error.localizedDescription)
+            })
+        }
     }
     
     private func trackScreenView(screenName: String) {

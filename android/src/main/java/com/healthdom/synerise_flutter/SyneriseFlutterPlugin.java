@@ -113,8 +113,10 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
   }
 
   private void authorizeByOauth(String token, Result result) {
-    Client.authenticate(token, ClientIdentityProvider.OAUTH, null, null, null)
-            .execute(new OauthSuccessHandler(result), new OauthErrorHandler(result));
+    if (!Client.isSignedIn()) {
+      Client.authenticate(token, ClientIdentityProvider.OAUTH, null, null, null)
+              .execute(new OauthSuccessHandler(result), new OauthErrorHandler(result));
+    }
   }
 
   private void trackScreenView(String name) {
