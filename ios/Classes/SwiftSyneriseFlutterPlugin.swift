@@ -32,6 +32,14 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
           authorizeByOauth(token: token, result: result)
           break
           
+        case "trackScreenView":
+          guard let screenName = call.arguments as? String else {
+              result("Missing screen name")
+              return
+          }
+          trackScreenView(screenName: screenName)
+          break
+          
         case "registerFcmToken":
           guard let fcmToken = call.arguments as? String else {
               result("Missing Fcm token")
@@ -45,11 +53,11 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
               result("iOS could not recognize flutter arguments for method trackEvent")
               return
           }
-          guard let params = args["params"] as? [String: String] else {
+          if (args["params"] != nil) {
+              trackEventWithParams(action: args["action"] as! String, label: args["label"] as! String, params: args["params"] as! [String : String])
+          } else {
               trackEvent(action: args["action"] as! String, label: args["label"] as! String)
-              return
           }
-          trackEventWithParams(action: args["action"] as! String, label: args["label"] as! String, params: params)
           
           break
 
@@ -88,6 +96,11 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
         }, failure: { (error: SNRApiError) in
             result(error.localizedDescription)
         })
+    }
+    
+    private func trackScreenView(screenName: String) {
+        let event: VisitedScreenEvent = VisitedScreenEvent.init(label: screenName)
+        Tracker.send(event);
     }
     
     private func registerFcmToken(fcmToken: String, result: @escaping FlutterResult) {

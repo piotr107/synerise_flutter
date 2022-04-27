@@ -69,6 +69,10 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
         final String token = call.arguments.toString();
         authorizeByOauth(token, result);
         break;
+      case "trackScreenView":
+        final String screenName = call.arguments.toString();
+        trackScreenView(screenName);
+        break;
       case "registerFcmToken":
         final String fcmToken = call.arguments.toString();
         registerFcmToken(fcmToken, result);
