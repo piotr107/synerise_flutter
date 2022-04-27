@@ -19,11 +19,14 @@ import com.synerise.sdk.core.net.IApiCall;
 import com.synerise.sdk.core.types.enums.HostApplicationType;
 import com.synerise.sdk.core.types.enums.MessagingServiceType;
 import com.synerise.sdk.event.Tracker;
+import com.synerise.sdk.event.TrackerParams;
+import com.synerise.sdk.event.model.CustomEvent;
 import com.synerise.sdk.event.model.interaction.VisitedScreenEvent;
 import com.synerise.sdk.injector.Injector;
 import com.synerise.sdk.injector.callback.InjectorSource;
 import com.synerise.sdk.injector.callback.OnInjectorListener;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -74,6 +77,12 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
         final String fcmToken = call.arguments.toString();
         registerFcmToken(fcmToken, result);
         break;
+      case "trackEvent":
+        final String action = call.argument("action");
+        final String label = call.argument("label");
+        final Map<String, String> params = call.argument("params");
+        trackEvent(action, label, params);
+        break;
       default:
         result.notImplemented();
     }
@@ -119,6 +128,21 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
     IApiCall call = Client.registerForPush(token, true);
     call.execute(() -> result.success("Register for Push succeed: " + token),
             apiError -> result.success(Log.w(TAG, "Register for push failed: " + token)));
+  }
+
+  private void trackEvent(String action, String label, Map<String, String> params) {
+    Log.d(TAG, "Track event: " + action + " , label: " + label);
+    if (params != null) {
+      Log.d(TAG, "Track event with params: " + params.toString());
+      TrackerParams.Builder builder = new TrackerParams.Builder();
+      for (Map.Entry<String, String> entry : params.entrySet()) {
+        builder.add(entry.getKey(), entry.getValue());
+      }
+      TrackerParams trackerParams = builder.build();
+      Tracker.send(new CustomEvent(action, label, trackerParams));
+    } else {
+      Tracker.send(new CustomEvent(action, label));
+    }
   }
 
   @Override

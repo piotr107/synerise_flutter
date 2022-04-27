@@ -65,4 +65,13 @@ class SyneriseFlutter {
   void trackScreenView(String name) {
     _channel.invokeMethod('trackScreenView', name);
   }
+
+  void trackEvent(String action, String label, Map<String, String>? params) {
+    var args = {
+      'action': action,
+      'label': label,
+      'params': params
+    };
+    _channel.invokeMethod('trackEvent', args);
+  }
 }
