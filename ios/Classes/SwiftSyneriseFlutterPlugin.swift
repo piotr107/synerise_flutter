@@ -3,10 +3,18 @@ import UIKit
 import SyneriseSDK
 
 public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelegate {
+    
+    var channel: FlutterMethodChannel
+    
+    init(withMethodChannel _channel: FlutterMethodChannel) {
+        channel = _channel
+    }
+    
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "synerise_flutter", binaryMessenger: registrar.messenger())
-    let instance = SwiftSyneriseFlutterPlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
+    let _channel = FlutterMethodChannel(name: "synerise_flutter", binaryMessenger: registrar.messenger())
+    let _instance = SwiftSyneriseFlutterPlugin(withMethodChannel: _channel)
+    registrar.addApplicationDelegate(_instance)
+    registrar.addMethodCallDelegate(_instance, channel: _channel)
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -20,7 +28,7 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
               result("Synerise client UUID: " + Client.getUUID())
               break
           }
-          initSynerise(apiKey: args["apiKey"]!, appId: args["appId"]!)
+          initSynerise(apiKey: args["apiKey"]!, appId: args["appId"]!, appGroupIdentifier: args["appGroupIdentifier"]!, keychainGroupIdentifier: args["appGroupIdentifier"]!)
           result("Synerise client UUID: " + Client.getUUID())
           break
 
@@ -53,9 +61,9 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
       }
   }
     
-    private func initSynerise(apiKey: String, appId: String) {
-        Synerise.settings.sdk.appGroupIdentifier = "group.zdrowappka.dev"
-        Synerise.settings.sdk.keychainGroupIdentifier = "com.zdrowappka.prod"
+    private func initSynerise(apiKey: String, appId: String, appGroupIdentifier: String, keychainGroupIdentifier: String) {
+        Synerise.settings.sdk.appGroupIdentifier = appGroupIdentifier
+        Synerise.settings.sdk.keychainGroupIdentifier = keychainGroupIdentifier
         Synerise.initialize(clientApiKey: apiKey)
         Synerise.setDebugModeEnabled(true)
         Synerise.setCrashHandlingEnabled(true)
@@ -98,4 +106,45 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
         }
     }
     
+    public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+      let userInfo = response.notification.request.content.userInfo
+      let isSyneriseNotification: Bool = Synerise.isSyneriseNotification(userInfo)
+      if isSyneriseNotification {
+          Synerise.handleNotification(userInfo, actionIdentifier: response.actionIdentifier)
+          let rawNotificationContent = userInfo["content"] as! String
+          let rawData = rawNotificationContent.data(using: .utf8)
+          let decoder = JSONDecoder()
+          let notificationContent = try! decoder.decode(SyneriseNotificationContent.self, from: rawData!)
+          let action = notificationContent.notification.action
+          if (action.type == "DEEP_LINKING") {
+            channel.invokeMethod("onUrlOpen", arguments: action.item)
+          }
+      }
+      completionHandler()
+    }
+
+    public func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+      let userInfo = notification.request.content.userInfo
+
+      let isSyneriseNotification: Bool = Synerise.isSyneriseNotification(userInfo)
+      
+      if isSyneriseNotification {
+        Synerise.handleNotification(userInfo)
+        completionHandler(UNNotificationPresentationOptions.init(rawValue: 0))
+      }
+    }
+    
+}
+
+struct SyneriseNotificationContent: Codable {
+    let notification: SyneriseNotificationData
+}
+
+struct SyneriseNotificationData: Codable {
+    let action: SyneriseNotificationAction
+}
+
+struct SyneriseNotificationAction: Codable {
+    let item: String
+    let type: String
 }

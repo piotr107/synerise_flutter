@@ -37,9 +37,16 @@ class SyneriseFlutter {
   }
 
   Future<String?> initSynerise(
-      {required String apiKey, required String appId}) async {
-    final String? result = await _channel
-        .invokeMethod('initSynerise', {'apiKey': apiKey, 'appId': appId});
+      {required String apiKey,
+      required String appId,
+      String? appGroupIdentifier,
+      String? keychainGroupIdentifier}) async {
+    final String? result = await _channel.invokeMethod('initSynerise', {
+      'apiKey': apiKey,
+      'appId': appId,
+      'appGroupIdentifier': appGroupIdentifier,
+      'keychainGroupIdentifier': keychainGroupIdentifier
+    });
     return result;
   }
 
