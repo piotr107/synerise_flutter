@@ -3,13 +3,18 @@ package com.healthdom.synerise_flutter;
 import android.app.Activity;
 
 import androidx.annotation.NonNull;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.util.Log;
 
 import com.google.firebase.messaging.RemoteMessage;
 import com.healthdom.synerise_flutter.util.OauthErrorHandler;
 import com.healthdom.synerise_flutter.util.OauthSuccessHandler;
+import com.healthdom.synerise_flutter.util.PushThread;
 import com.synerise.sdk.client.Client;
 import com.synerise.sdk.client.model.ClientIdentityProvider;
 import com.synerise.sdk.core.Synerise;
@@ -26,7 +31,6 @@ import com.synerise.sdk.injector.Injector;
 import com.synerise.sdk.injector.callback.InjectorSource;
 import com.synerise.sdk.injector.callback.OnInjectorListener;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -39,7 +43,7 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 
 /** SyneriseFlutterPlugin */
-public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler, OnLocationUpdateListener, SyneriseListener, OnInjectorListener, PluginRegistry.NewIntentListener {
+public class SyneriseFlutterPlugin extends BroadcastReceiver implements FlutterPlugin, ActivityAware, MethodCallHandler, OnLocationUpdateListener, SyneriseListener, OnInjectorListener, PluginRegistry.NewIntentListener {
 
   private MethodChannel channel;
   private Activity activity;
@@ -50,6 +54,10 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
     Log.d(TAG, "onAttachedToEngine");
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "synerise_flutter");
     channel.setMethodCallHandler(this);
+    IntentFilter intentFilter = new IntentFilter();
+    LocalBroadcastManager manager =
+            LocalBroadcastManager.getInstance(flutterPluginBinding.getApplicationContext());
+    manager.registerReceiver(this, intentFilter);
   }
 
   @Override
@@ -92,6 +100,9 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     Log.d(TAG, "onDetachedFromEngine");
     channel.setMethodCallHandler(null);
+    if (binding.getApplicationContext() != null) {
+      LocalBroadcastManager.getInstance(binding.getApplicationContext()).unregisterReceiver(this);
+    }
   }
 
   private void initSynerise(String apiKey, String appId) {
@@ -156,28 +167,34 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
   }
 
   @Override
-  public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+  public void onAttachedToActivity(ActivityPluginBinding binding) {
     binding.addOnNewIntentListener(this);
-    activity = binding.getActivity();
-    Log.d(TAG, "onAttachedToActivity");
+    this.activity = binding.getActivity();
+    if (activity.getIntent() != null && activity.getIntent().getExtras() != null) {
+      if ((activity.getIntent().getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY)
+              != Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) {
+        onNewIntent(activity.getIntent());
+      }
+    }
   }
 
   @Override
   public void onDetachedFromActivityForConfigChanges() {
     Log.d(TAG, "onDetachedFromActivityForConfigChanges");
-
+    this.activity = null;
   }
 
   @Override
   public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
     Log.d(TAG, "onReattachedToActivityForConfigChanges");
-
+    binding.addOnNewIntentListener(this);
+    this.activity = binding.getActivity();
   }
 
   @Override
   public void onDetachedFromActivity() {
     Log.d(TAG, "onDetachedFromActivity");
-
+    this.activity = null;
   }
 
   @Override
@@ -204,5 +221,23 @@ public class SyneriseFlutterPlugin implements FlutterPlugin, ActivityAware, Meth
     }
     activity.setIntent(intent);
     return true;
+  }
+
+  @Override
+  public void onReceive(Context context, Intent intent) {
+    Log.d(TAG, "SyneriseMessagingReceiver: message received");
+    if (intent.getExtras() == null) {
+      Log.d(
+              TAG,
+              "broadcast received but intent contained no extras to process RemoteMessage. Operation cancelled.");
+      return;
+    }
+    RemoteMessage remoteMessage = new RemoteMessage(intent.getExtras());
+    Map<String,String> messageData = remoteMessage.getData();
+    boolean isSynerisePush = Injector.isSynerisePush(messageData);
+    if (isSynerisePush) {
+      PushThread thread = new PushThread(messageData);
+      thread.start();
+    }
   }
 }

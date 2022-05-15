@@ -130,12 +130,14 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
         let event: CustomEvent = CustomEvent.init(label: label, action: action, params: parameters)
 
         Tracker.send(event)
+        print("trackEventWithParams success, label: " + label + " action: " + action)
     }
     
     private func trackEvent(action: String, label: String) {
         let event: CustomEvent = CustomEvent.init(label: label, action: action)
 
         Tracker.send(event)
+        print("trackEvent success, label: " + label + " action: " + action)
     }
     
     public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
