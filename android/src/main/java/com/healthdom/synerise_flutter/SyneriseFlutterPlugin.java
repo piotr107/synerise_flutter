@@ -5,6 +5,7 @@ import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 import com.google.firebase.messaging.RemoteMessage;
+import com.healthdom.synerise_flutter.util.Keys;
 import com.healthdom.synerise_flutter.util.OauthErrorHandler;
 import com.healthdom.synerise_flutter.util.OauthSuccessHandler;
 import com.healthdom.synerise_flutter.util.PushThread;
@@ -233,11 +235,34 @@ public class SyneriseFlutterPlugin extends BroadcastReceiver implements FlutterP
       return;
     }
     RemoteMessage remoteMessage = new RemoteMessage(intent.getExtras());
-    Map<String,String> messageData = remoteMessage.getData();
-    boolean isSynerisePush = Injector.isSynerisePush(messageData);
-    if (isSynerisePush) {
-      PushThread thread = new PushThread(messageData);
-      thread.start();
+    Map<String, String> messageData = remoteMessage.getData();
+    try {
+      boolean isSynerisePush = Injector.isSynerisePush(messageData);
+      if (isSynerisePush) {
+        PushThread thread = new PushThread(messageData);
+        thread.start();
+      }
+    } catch (Exception e) {
+      Synerise.settings.tracker.autoTracking.enabled = false;
+      Synerise.settings.tracker.setMinimumBatchSize(11);
+      Synerise.settings.tracker.setMaximumBatchSize(99);
+      Synerise.settings.tracker.setAutoFlushTimeout(4999);
+      Synerise.settings.injector.automatic = true;
+      Synerise.settings.sdk.shouldDestroySessionOnApiKeyChange = true;
+      Synerise.settings.notifications.setEncryption(true);
+      Synerise.Builder.with((Application) context.getApplicationContext(), Keys.API_KEY, Keys.APP_ID)
+              .mesaggingServiceType(MessagingServiceType.GMS)
+              .syneriseDebugMode(true)
+              .crashHandlingEnabled(true)
+              .locationUpdateRequired(this)
+              .initializationListener(this)
+              .hostApplicationType(HostApplicationType.NATIVE_ANDROID)
+              .build();
+      boolean isSynerisePush = Injector.isSynerisePush(messageData);
+      if (isSynerisePush) {
+        PushThread thread = new PushThread(messageData);
+        thread.start();
+      }
     }
   }
 }
