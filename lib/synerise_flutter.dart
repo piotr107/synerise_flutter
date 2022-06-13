@@ -19,8 +19,10 @@ class SyneriseFlutter {
   final MethodChannel _channel;
 
   final _onUrlOpen = StreamController<Uri>.broadcast();
+  final _onAppOpen = StreamController<void>.broadcast();
 
   Stream<Uri> get onUrlOpen => _onUrlOpen.stream;
+  Stream<void> get onAppOpen => _onAppOpen.stream;
 
   Future<dynamic> _methodCallHandler(MethodCall call) async {
     switch (call.method) {
@@ -30,6 +32,9 @@ class SyneriseFlutter {
         if (uri != null) {
           _onUrlOpen.add(uri);
         }
+        break;
+      case 'onAppOpen2':
+        _onAppOpen.add(null);
         break;
       default:
         throw 'Method ${call.method} not implemented on channel synerise_flutter';

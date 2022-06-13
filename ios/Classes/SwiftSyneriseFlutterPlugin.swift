@@ -70,6 +70,22 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
           
           break
 
+        case "trackPushViewed":
+          guard let label = call.arguments as? String else {
+              result("Missing label")
+              return
+          }
+          trackPushViewedEvent(label: label)
+          break
+
+        case "trackPushClicked":
+          guard let label = call.arguments as? String else {
+              result("Missing label")
+              return
+          }
+          trackPushClickedEvent(label: label)
+          break
+
         default:
           result("Method not implemented: " + call.method)
       }
@@ -83,6 +99,7 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
         Synerise.setCrashHandlingEnabled(true)
         Synerise.setDelegate(self)
         Synerise.settings.tracker.autoTracking.enabled = false
+        Synerise.settings.notifications.disableInAppAlerts = true
         initNotificationSettings()
     }
 
@@ -139,6 +156,20 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
         Tracker.send(event)
         print("trackEvent success, label: " + label + " action: " + action)
     }
+
+    private func trackPushViewedEvent(label: String) {
+        let event: PushViewedEvent = PushViewedEvent.init(label: label)
+
+        Tracker.send(event)
+        print("pushViewedEvent success, label: " + label)
+    }
+
+    private func trackPushClickedEvent(label: String) {
+        let event: PushClickedEvent = PushClickedEvent.init(label: label)
+
+        Tracker.send(event)
+        print("pushClickedEvent success, label: " + label)
+    }
     
     public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
       let userInfo = response.notification.request.content.userInfo
@@ -151,7 +182,12 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
           let notificationContent = try! decoder.decode(SyneriseNotificationContent.self, from: rawData!)
           let action = notificationContent.notification.action
           if (action.type == "DEEP_LINKING") {
+            trackPushClickedEvent(label: "test");
             channel.invokeMethod("onUrlOpen", arguments: action.item)
+          }
+          if (action.type == "OPEN_APP") {
+            trackPushClickedEvent(label: "test");
+            channel.invokeMethod("onAppOpen2", arguments: nil)
           }
       }
       completionHandler()
@@ -164,6 +200,7 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
       
       if isSyneriseNotification {
         Synerise.handleNotification(userInfo)
+        trackPushViewedEvent(label: "test");
         completionHandler(UNNotificationPresentationOptions.init(rawValue: 0))
       }
     }
@@ -179,6 +216,6 @@ struct SyneriseNotificationData: Codable {
 }
 
 struct SyneriseNotificationAction: Codable {
-    let item: String
+    let item: String?
     let type: String
 }
