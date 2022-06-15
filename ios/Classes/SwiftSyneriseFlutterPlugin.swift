@@ -201,7 +201,11 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
       if isSyneriseNotification {
         Synerise.handleNotification(userInfo)
         trackPushViewedEvent(label: "test");
-        completionHandler(UNNotificationPresentationOptions.init(rawValue: 0))
+        if #available(iOS 14.0, *) {
+            completionHandler([.banner, .badge, .sound])
+        } else {
+            completionHandler([.alert, .badge, .sound])
+        }
       }
     }
     
