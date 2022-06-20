@@ -182,11 +182,9 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
           let notificationContent = try! decoder.decode(SyneriseNotificationContent.self, from: rawData!)
           let action = notificationContent.notification.action
           if (action.type == "DEEP_LINKING") {
-            trackPushClickedEvent(label: "test");
             channel.invokeMethod("onUrlOpen", arguments: action.item)
           }
           if (action.type == "OPEN_APP") {
-            trackPushClickedEvent(label: "test");
             channel.invokeMethod("onAppOpen2", arguments: nil)
           }
       }
@@ -200,7 +198,6 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
       
       if isSyneriseNotification {
         Synerise.handleNotification(userInfo)
-        trackPushViewedEvent(label: "test");
         if #available(iOS 14.0, *) {
             completionHandler([.banner, .badge, .sound])
         } else {
