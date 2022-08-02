@@ -49,6 +49,7 @@ public class SyneriseFlutterPlugin extends BroadcastReceiver implements FlutterP
 
   private MethodChannel channel;
   private Activity activity;
+  private String lastData;
   private static final String TAG = SyneriseFlutterPlugin.class.getSimpleName();
 
   @Override
@@ -92,6 +93,9 @@ public class SyneriseFlutterPlugin extends BroadcastReceiver implements FlutterP
         final String label = call.argument("label");
         final Map<String, String> params = call.argument("params");
         trackEvent(action, label, params);
+        break;
+      case "getLastData":
+        result.success(lastData);
         break;
       default:
         result.notImplemented();
@@ -213,6 +217,7 @@ public class SyneriseFlutterPlugin extends BroadcastReceiver implements FlutterP
 
   @Override
   public boolean onNewIntent(Intent intent) {
+    Log.d(TAG, "Synerise onNewIntent");
     if (intent == null || intent.getExtras() == null) {
       return false;
     }
@@ -220,6 +225,7 @@ public class SyneriseFlutterPlugin extends BroadcastReceiver implements FlutterP
     if (data != null) {
       Log.d(TAG, data);
       channel.invokeMethod("onUrlOpen", data);
+      lastData = data;
     }
     activity.setIntent(intent);
     return true;

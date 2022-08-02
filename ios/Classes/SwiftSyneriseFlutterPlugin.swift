@@ -141,7 +141,7 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
         let parameters: TrackerParams = TrackerParams.make {
             builder in
             for (key, value) in params {
-                builder.setString(key, forKey: value)
+                builder.setString(value, forKey: key)
             }
         }
         let event: CustomEvent = CustomEvent.init(label: label, action: action, params: parameters)

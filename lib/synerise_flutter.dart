@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
 
@@ -69,6 +70,15 @@ class SyneriseFlutter {
 
   void trackScreenView(String name) {
     _channel.invokeMethod('trackScreenView', name);
+  }
+
+  Future<Uri?> getLastData() async {
+    if (Platform.isIOS) {
+      return null;
+    }
+    final url = await _channel.invokeMethod('getLastData');
+    final uri = Uri.tryParse(url);
+    return uri;
   }
 
   void trackEvent(String action, String label, Map<String, String>? params) {
