@@ -77,16 +77,15 @@ class SyneriseFlutter {
       return null;
     }
     final url = await _channel.invokeMethod('getLastData');
+    if (url == null) {
+      return null;
+    }
     final uri = Uri.tryParse(url);
     return uri;
   }
 
   void trackEvent(String action, String label, Map<String, String>? params) {
-    var args = {
-      'action': action,
-      'label': label,
-      'params': params
-    };
+    var args = {'action': action, 'label': label, 'params': params};
     _channel.invokeMethod('trackEvent', args);
   }
 }
