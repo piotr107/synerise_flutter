@@ -64,7 +64,7 @@ class SyneriseFlutter {
 
   Future<String?> registerFcmToken(String token) async {
     final String? response =
-        await _channel.invokeMethod('registerFcmToken', token);
+        await _channel.invokeMethod('registerFcmToken', token).toString();
     return response;
   }
 

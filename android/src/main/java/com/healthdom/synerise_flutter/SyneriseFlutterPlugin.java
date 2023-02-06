@@ -68,13 +68,13 @@ public class SyneriseFlutterPlugin extends BroadcastReceiver implements FlutterP
     switch (call.method) {
       case "initSynerise":
         if (Synerise.getAppId() != null) {
-          result.success("Synerise " + Synerise.getAppId());
+          result.success("Android Synerise AppId: " + Synerise.getAppId());
           break;
         }
         final String apiKey = call.argument("apiKey");
         final String appId = call.argument("appId");
         initSynerise(apiKey, appId);
-        result.success("Synerise " + Synerise.getAppId());
+        result.success("Android Synerise ApiKey: " + apiKey + " AppId: " + Synerise.getAppId());
         break;
       case "authorizeByOauth":
         final String token = call.arguments.toString();

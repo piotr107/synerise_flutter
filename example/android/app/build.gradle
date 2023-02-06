@@ -53,7 +53,7 @@ android {
 
     dependencies {
         implementation("androidx.multidex:multidex:2.0.1")
-        implementation 'com.synerise.sdk:synerise-mobile-sdk:4.0.0'
+        implementation 'com.synerise.sdk:synerise-mobile-sdk:4.9.0'
     }
 }
 
