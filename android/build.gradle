@@ -3,7 +3,6 @@ version '1.0'
 
 buildscript {
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
     }
@@ -15,7 +14,6 @@ buildscript {
 
 rootProject.allprojects {
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
         maven { url 'https://pkgs.dev.azure.com/Synerise/AndroidSDK/_packaging/prod/maven/v1' }
