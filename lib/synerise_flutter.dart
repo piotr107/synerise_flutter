@@ -62,6 +62,12 @@ class SyneriseFlutter {
     return response;
   }
 
+  Future<String?> authorizeByOauthWithCheck(String token) async {
+    final String? response =
+        await _channel.invokeMethod('authorizeByOauthWithCheck', token);
+    return response;
+  }
+
   Future<String?> registerFcmToken(String token) async {
     final String? response =
         await _channel.invokeMethod('registerFcmToken', token).toString();

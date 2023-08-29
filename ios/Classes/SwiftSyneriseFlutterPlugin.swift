@@ -40,6 +40,14 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
           }
           authorizeByOauth(token: token, result: result)
           break
+
+        case "authorizeByOauthWithCheck":
+          guard let tokenToCheck = call.arguments as? String else {
+              result("Missing OAuth token")
+              return
+          }
+          authorizeByOauthWithCheck(token: tokenToCheck, result: result)
+          break
           
         case "trackScreenView":
           guard let screenName = call.arguments as? String else {
@@ -122,6 +130,17 @@ public class SwiftSyneriseFlutterPlugin: NSObject, FlutterPlugin, SyneriseDelega
         }, failure: { (error: SNRApiError) in
             result(error.localizedDescription)
         })
+    }
+
+    private func authorizeByOauthWithCheck(token: String, result: @escaping FlutterResult) {
+        let isSignedIn: Bool = Client.isSignedIn()
+        if !isSignedIn {
+            Client.authenticate(token: token, clientIdentityProvider: ClientIdentityProvider.oAuth, authID: nil, context: nil, success: { (value: Bool) in
+                result("OAuth result: " + String(value))
+            }, failure: { (error: SNRApiError) in
+                result(error.localizedDescription)
+            })
+        }
     }
     
     private func trackScreenView(screenName: String) {

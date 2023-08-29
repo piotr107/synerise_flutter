@@ -33,3 +33,4 @@ example/lib/keys.dart
 android/google-services.json
 example/ios/Runner/Keys.swift
 android/src/main/java/com/healthdom/synerise_flutter/util/Keys.java
+example/._*
